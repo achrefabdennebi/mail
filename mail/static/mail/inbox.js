@@ -56,6 +56,41 @@ async function getMailboxFromApi(mailbox) {
   return data;
 }
 
+/**
+ * Create Javascript mailbox list
+ * @param {*} data 
+ */
+function createMailboxView( data) {
+  // Create ul element
+  const list = document.createElement(`ul`);
+
+  // Append items list based on data
+  if (data && data.length > 0) {
+    for (let item of data) {
+      itemList = document.createElement(`li`);
+
+      // Apply the background color mail if read it
+      const color = item.read ? `#ededed` : `#ffffff`;
+      itemList.style.backgroundColor = color;
+
+      // Create content list
+      itemList.innerHTML = ` 
+        <div>
+          <strong> ${item.sender}</strong> 
+          <span>${item.body.substr(0,20)}...</span>
+          <span class="align-right grey-color">${item.timestamp}</span>
+        </div>
+      `;
+
+      list.appendChild(itemList)
+    }
+  }
+
+  // Extract list on view container
+  const content = document.querySelector(`#emails-view`)
+  content.appendChild(list);
+}
+
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
@@ -66,6 +101,7 @@ function load_mailbox(mailbox) {
   const fetchedData = getMailboxFromApi(mailbox);
   fetchedData.then((mailbox)=> {
     console.log(mailbox);
+    createMailboxView(mailbox);
   });
 
   // Show the mailbox name
