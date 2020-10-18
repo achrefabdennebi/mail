@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
-
+  
   // By default, load the inbox
   load_mailbox('inbox');
   
@@ -32,9 +32,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load sent mailbox view
         load_mailbox('sent');
     });
-
-    console.log(`Trigger the submit event`);
   });
+
+  // Display detail mail
+  document.addEventListener(`click`, displayMailDetail);
 });
 
 function compose_email() {
@@ -69,6 +70,9 @@ function createMailboxView( data) {
     for (let item of data) {
       itemList = document.createElement(`li`);
 
+      // Append className ti list item
+      itemList.className = `mail-info`;
+
       // Apply the background color mail if read it
       const color = item.read ? `#ededed` : `#ffffff`;
       itemList.style.backgroundColor = color;
@@ -82,6 +86,9 @@ function createMailboxView( data) {
         </div>
       `;
 
+      // Add data value to first child itemList
+      itemList.firstElementChild.dataset.mail = JSON.stringify(item);
+    
       list.appendChild(itemList)
     }
   }
@@ -91,6 +98,26 @@ function createMailboxView( data) {
   content.appendChild(list);
 }
 
+/**
+ * Click on item list info
+ * @param {*} mailbox 
+ */
+function displayMailDetail(event) {
+  const {target } = event;
+
+  if (target.closest(`.mail-info`)){
+    const { dataset } = target;
+    const { mail } = dataset;
+    const mailInfoItem  = JSON.parse(mail);
+
+    console.log(mailInfoItem);
+  }
+}
+
+/**
+ * Load mail box data
+ * @param {*} mailbox 
+ */
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views

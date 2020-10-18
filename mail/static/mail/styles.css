@@ -9,9 +9,12 @@ ul {
 
 ul> li {
     border: 1px solid;
-    padding: 0.5em;
     margin-bottom: 0.2em;
     cursor: pointer;
+}
+
+ul > li > div {
+    padding: 0.5em;
 }
 
 .align-right {
