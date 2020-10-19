@@ -50,11 +50,40 @@ function compose_email() {
   document.querySelector('#compose-body').value = '';
 }
 
-
+/**
+ * Api get mailbox
+ * @param {*} mailbox 
+ */
 async function getMailboxFromApi(mailbox) {
   const  emails = await fetch(`/emails/${mailbox}`);
   const data = await emails.json();
   return data;
+}
+
+/**
+ * Api get mail detail
+ * @param {*} id 
+ */
+async function getApiDetailMail(id) {
+  const detail = await fetch(`emails/${id}`)
+  const data = await detail.json();
+  return data;
+}
+
+/**
+ * Api mark the mail as read
+ * @param {*} id 
+ */
+async function markMailAsRead(id) {
+  const markMailAsRead = await fetch(`emails/${id}`, {
+      method:'PUT',
+      body:JSON.stringify({
+          read: true
+      })
+    }
+  );
+
+  return markMailAsRead;
 }
 
 /**
@@ -87,8 +116,9 @@ function createMailboxView( data) {
       `;
 
       // Add data value to first child itemList
+      Array.from(itemList.firstElementChild.children).forEach((node) => node.dataset.mail = JSON.stringify(item));
       itemList.firstElementChild.dataset.mail = JSON.stringify(item);
-    
+
       list.appendChild(itemList)
     }
   }
@@ -109,10 +139,52 @@ function displayMailDetail(event) {
     const { dataset } = target;
     const { mail } = dataset;
     const mailInfoItem  = JSON.parse(mail);
-
-    console.log(mailInfoItem);
+    const fetchedDetailMail = getApiDetailMail(mailInfoItem.id);
+    const markAsRead = markMailAsRead(mailInfoItem.id);
+    Promise.all([fetchedDetailMail, markAsRead]).then((result) => {
+      // Get the first result of the promise to display the mail detail
+      displayMailView(result[0]);
+    });
   }
 }
+
+/**
+ * UI display mail
+ * @param {*} mailDetail 
+ */
+function displayMailView(mailDetail) {
+  // extract data 
+  const {sender, recipients , subject, timestamp } = mailDetail;
+
+  // Show mail detail
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector(`#display-mail-view`).style.display = 'block';
+
+  // Show mail detail
+  document.querySelector(`#display-mail-view`).innerHTML = `
+    <div>
+      <div>
+        <strong>From:</strong>
+        <span>${sender}</span>
+      </div>
+      <div>
+        <strong>To:</strong>
+        <span>${recipients.join()}</span>
+      </div>
+      <div>
+        <strong>Subject:</strong>
+        <span>${subject}</span>
+      </div>
+      <div>
+        <strong>Timestamp:</strong>
+        <span>${timestamp}</span>
+      </div>
+      <button class="btn btn-sm btn-outline-primary" id="replay">Replay</button>
+    </div>
+  `
+}
+
 
 /**
  * Load mail box data
@@ -123,11 +195,11 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector(`#display-mail-view`).style.display = 'none';
 
   // Fetch data of mailbox
   const fetchedData = getMailboxFromApi(mailbox);
   fetchedData.then((mailbox)=> {
-    console.log(mailbox);
     createMailboxView(mailbox);
   });
 
