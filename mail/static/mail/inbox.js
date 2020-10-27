@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#compose').addEventListener('click', compose_email);
   
   // By default, load the inbox
+  document.currentView = 'inbox';
   load_mailbox('inbox');
   
   // Submit the form of send mail
@@ -174,7 +175,6 @@ function displayMailDetail(event) {
  * @param {*} mailDetail 
  */
 function displayMailView(mailDetail) {
-  console.log(mailDetail);
   // extract data 
   const {id , sender, recipients , subject, timestamp, archived } = mailDetail;
 
@@ -184,8 +184,11 @@ function displayMailView(mailDetail) {
   document.querySelector(`#display-mail-view`).style.display = 'block';
 
   // Display Archive or Unarchive button
-  const button = !archived ? `<button id="archiveMail" class="btn btn-sm btn-outline-primary" data-id="${JSON.stringify(id)}">Archive</button>`
-                           : `<button id="unarchiveMail" class="btn btn-sm btn-outline-primary" data-id="${JSON.stringify(id)}">Unarchive</button>`;
+  let button = ``;
+  if (document.currentView === 'inbox'  || document.currentView === 'archive') {
+    button = !archived ? `<button id="archiveMail" class="btn btn-sm btn-outline-primary" data-id="${JSON.stringify(id)}">Archive</button>`
+                             : `<button id="unarchiveMail" class="btn btn-sm btn-outline-primary" data-id="${JSON.stringify(id)}">Unarchive</button>`;
+  } 
 
   // Show mail detail
   document.querySelector(`#display-mail-view`).innerHTML = `
@@ -217,7 +220,9 @@ function displayMailView(mailDetail) {
  * @param {*} mailbox 
  */
 function load_mailbox(mailbox) {
-  
+  // Persist the current view
+  const displayedView = mailbox;
+
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
@@ -227,6 +232,7 @@ function load_mailbox(mailbox) {
   const fetchedData = getMailboxFromApi(mailbox);
   fetchedData.then((mailbox)=> {
     createMailboxView(mailbox);
+    document.currentView = displayedView;
   });
 
   // Show the mailbox name
