@@ -86,6 +86,17 @@ async function markMailAsRead(id) {
   return markMailAsRead;
 }
 
+async function toggleArchiveMail(id, isArchived) {
+  const archiveUnArchiveMail = await fetch(`emails/${id}`, {
+    method:'PUT',
+    body:JSON.stringify({
+        archived: isArchived
+    })
+  });
+
+  return archiveUnArchiveMail;
+}
+
 /**
  * Create Javascript mailbox list
  * @param {*} data 
@@ -146,6 +157,16 @@ function displayMailDetail(event) {
       displayMailView(result[0]);
     });
   }
+
+  if (target.id === `archiveMail`) {
+    const id = target && target.dataset && target.dataset.id;
+    toggleArchiveMail(id, true).then(() => load_mailbox(`inbox`));
+  }
+
+  if (target.id === `unarchiveMail`) {
+    const id = target && target.dataset && target.dataset.id;
+    toggleArchiveMail(id, false).then(() => load_mailbox(`inbox`));
+  }
 }
 
 /**
@@ -153,13 +174,18 @@ function displayMailDetail(event) {
  * @param {*} mailDetail 
  */
 function displayMailView(mailDetail) {
+  console.log(mailDetail);
   // extract data 
-  const {sender, recipients , subject, timestamp } = mailDetail;
+  const {id , sender, recipients , subject, timestamp, archived } = mailDetail;
 
   // Show mail detail
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector(`#display-mail-view`).style.display = 'block';
+
+  // Display Archive or Unarchive button
+  const button = !archived ? `<button id="archiveMail" class="btn btn-sm btn-outline-primary" data-id="${JSON.stringify(id)}">Archive</button>`
+                           : `<button id="unarchiveMail" class="btn btn-sm btn-outline-primary" data-id="${JSON.stringify(id)}">Unarchive</button>`;
 
   // Show mail detail
   document.querySelector(`#display-mail-view`).innerHTML = `
@@ -180,7 +206,7 @@ function displayMailView(mailDetail) {
         <strong>Timestamp:</strong>
         <span>${timestamp}</span>
       </div>
-      <button class="btn btn-sm btn-outline-primary" id="replay">Replay</button>
+      ${button}
     </div>
   `
 }
