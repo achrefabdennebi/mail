@@ -168,6 +168,17 @@ function displayMailDetail(event) {
     const id = target && target.dataset && target.dataset.id;
     toggleArchiveMail(id, false).then(() => load_mailbox(`inbox`));
   }
+
+  if (target.id === `replyMail`) {
+    const fetchedDetailMail = getApiDetailMail(target.dataset.id);
+    fetchedDetailMail.then((mailDetailResult) => {
+      
+      compose_email()
+      document.querySelector('#compose-recipients').value = mailDetailResult.recipients;
+      document.querySelector('#compose-subject').value = mailDetailResult.subject;
+      document.querySelector('#compose-body').value = `On ${mailDetailResult.timestamp} ${mailDetailResult.sender} wrote: \n ${mailDetailResult.subject } \n\n` ;
+    });
+  }
 }
 
 /**
@@ -177,7 +188,7 @@ function displayMailDetail(event) {
 function displayMailView(mailDetail) {
   // extract data 
   const {id , sender, recipients , subject, timestamp, archived } = mailDetail;
-
+  
   // Show mail detail
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
@@ -190,6 +201,7 @@ function displayMailView(mailDetail) {
                              : `<button id="unarchiveMail" class="btn btn-sm btn-outline-primary" data-id="${JSON.stringify(id)}">Unarchive</button>`;
   } 
 
+  const replayBtn = `<button id="replyMail" class="btn btn-sm btn-outline-primary" data-id ="${JSON.stringify(id)}" >Reply</button>`;
   // Show mail detail
   document.querySelector(`#display-mail-view`).innerHTML = `
     <div>
@@ -210,6 +222,7 @@ function displayMailView(mailDetail) {
         <span>${timestamp}</span>
       </div>
       ${button}
+      ${replayBtn}
     </div>
   `
 }
