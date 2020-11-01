@@ -44,6 +44,7 @@ function compose_email() {
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#display-mail-view').style.display = 'none';
 
   // Clear out composition fields
   document.querySelector('#compose-recipients').value = '';
@@ -173,7 +174,7 @@ function displayMailDetail(event) {
     const fetchedDetailMail = getApiDetailMail(target.dataset.id);
     fetchedDetailMail.then((mailDetailResult) => {
       
-      compose_email()
+      compose_email();
       document.querySelector('#compose-recipients').value = mailDetailResult.recipients;
       document.querySelector('#compose-subject').value = mailDetailResult.subject;
       document.querySelector('#compose-body').value = `On ${mailDetailResult.timestamp} ${mailDetailResult.sender} wrote: \n ${mailDetailResult.subject } \n\n` ;
