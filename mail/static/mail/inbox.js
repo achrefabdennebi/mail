@@ -7,12 +7,14 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#compose').addEventListener('click', compose_email);
   
   // By default, load the inbox
+  // Save the current active view
   document.currentView = 'inbox';
   load_mailbox('inbox');
   
   // Submit the form of send mail
   const form = document.querySelector('#compose-form')
-  // Trigger the submit event
+
+  // Trigger the submit event if user compose mail
   form.addEventListener('submit',  (event) => {
     event.preventDefault();
     // Get the form data from the event object
@@ -35,22 +37,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Display detail mail
-  document.addEventListener(`click`, displayMailDetail);
+  // Handle actions done by users  (Reply, Archive, Unarchive) on the mail
+  document.addEventListener(`click`, HandleActionUserEvent);
 });
 
-function compose_email() {
+/** *
+ *  PART: API Backend
+ */
 
-  // Show compose view and hide other views
-  document.querySelector('#emails-view').style.display = 'none';
-  document.querySelector('#compose-view').style.display = 'block';
-  document.querySelector('#display-mail-view').style.display = 'none';
-
-  // Clear out composition fields
-  document.querySelector('#compose-recipients').value = '';
-  document.querySelector('#compose-subject').value = '';
-  document.querySelector('#compose-body').value = '';
-}
 
 /**
  * Api get mailbox
@@ -88,6 +82,11 @@ async function markMailAsRead(id) {
   return markMailAsRead;
 }
 
+/**
+ * Api to set the status of mail
+ * @param {*} id 
+ * @param {*} isArchived 
+ */
 async function toggleArchiveMail(id, isArchived) {
   const archiveUnArchiveMail = await fetch(`emails/${id}`, {
     method:'PUT',
@@ -99,7 +98,11 @@ async function toggleArchiveMail(id, isArchived) {
   return archiveUnArchiveMail;
 }
 
-/**
+/** *
+ *  PART: UI Side Effect view
+ * /
+
+ /**
  * Create Javascript mailbox list
  * @param {*} data 
  */
@@ -145,7 +148,7 @@ function createMailboxView( data) {
  * Click on item list info
  * @param {*} mailbox 
  */
-function displayMailDetail(event) {
+function HandleActionUserEvent(event) {
   const {target } = event;
 
   if (target.closest(`.mail-info`)){
@@ -173,8 +176,11 @@ function displayMailDetail(event) {
   if (target.id === `replyMail`) {
     const fetchedDetailMail = getApiDetailMail(target.dataset.id);
     fetchedDetailMail.then((mailDetailResult) => {
-      
+
+      // Display Compose mail view
       compose_email();
+
+      // Pre-fill input controls 
       document.querySelector('#compose-recipients').value = mailDetailResult.recipients;
       document.querySelector('#compose-subject').value = mailDetailResult.subject;
       document.querySelector('#compose-body').value = `On ${mailDetailResult.timestamp} ${mailDetailResult.sender} wrote: \n ${mailDetailResult.subject } \n\n` ;
@@ -251,4 +257,20 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+}
+
+/**
+ * Compose mail view
+ */
+function compose_email() {
+
+  // Show compose view and hide other views
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#display-mail-view').style.display = 'none';
+
+  // Clear out composition fields
+  document.querySelector('#compose-recipients').value = '';
+  document.querySelector('#compose-subject').value = '';
+  document.querySelector('#compose-body').value = '';
 }
